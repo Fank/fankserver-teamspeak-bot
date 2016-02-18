@@ -224,13 +224,15 @@ teamspeakClient.on('cliententerview', (eventResponse) => {
 			}
 		});
 	}).catch(() => {
-		teamspeakClient.send('sendtextmessage', {targetmode: 1, target: eventResponse.clid, msg: `Willkommen!
+		teamspeakClient.send('sendtextmessage', {targetmode: 1, target: eventResponse.clid, msg: `
+            Willkommen!
 
-Du besitzt aktuell keine Rechte, Registriere oder melde dich an.
-Zum registrieren benutze ".register <Benutzername> <Email> <Password>".
-Besitzt du schon ein account? Dann melde dich an mit ".login <Benutzername> <Password>"
+Du besitzt aktuell keine Rechte.
 
-Die EMail adresse wird nur zum zurücksetzten des Passwords benötigt.
+Zum Anmelden    [b].login <Benutzername> <Password>[/b]
+Zum Registrieren [b].register <Benutzername> <Email> <Password>[/b]
+
+[u]Die EMail adresse wird nur zum zurücksetzten des Passwords benötigt[/u]
 `}, (err) => {
 			console.log(err);
 		});
