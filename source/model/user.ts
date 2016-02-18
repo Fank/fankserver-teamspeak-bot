@@ -3,6 +3,16 @@ import gravatar = require("gravatar");
 import mongoose = require("mongoose");
 import timestamp = require("mongoose-timestamp");
 
+export interface IUserSchema extends mongoose.Document {
+	username: string,
+	password: string,
+	salt: string,
+	email: string,
+	avatar: string,
+	appLinks: Array<number>
+	validatePassword(password: string, callback: (valid: boolean) => void);
+}
+
 var UserSchema = new mongoose.Schema({
 	username: {type: String, required: true, unique: true, dropDups: true},
 	password: { type: String, required: true },
@@ -30,4 +40,4 @@ UserSchema.pre('save', function(next) {
 	callback(this.get('password') === CryptoJS.SHA3(password + this.get('salt')).toString());
 };
 
-module.exports = mongoose.model('User', UserSchema);
+mongoose.model('User', UserSchema);
