@@ -236,6 +236,17 @@ Zum Registrieren [b].register <Benutzername> <Email> <Password>[/b]
 `}, (err) => {
 			console.log(err);
 		});
+		teamspeakClient.send('servergroupsbyclientid', {cldbid: eventResponse.client_database_id}, (err, response) => {
+			if (!err) {
+				if (!Array.isArray(response)) {
+					response = [response];
+				}
+
+				response.forEach((servergroup) => {
+					teamspeakClient.send('servergroupdelclient', {sgid: servergroup.sgid, cldbid: servergroup.cldbid});
+				});
+			}
+		});
 	});
 });
 
