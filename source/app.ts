@@ -202,52 +202,59 @@ teamspeakClient.send('login', {client_login_name: config.config.teamspeak.user, 
 });
 
 teamspeakClient.on('cliententerview', (eventResponse) => {
-	console.log(eventResponse);
-	clientDB[eventResponse.clid] = eventResponse;
+	// Ignore serveradmin
+	if (eventResponse.client_database_id > 1) {
+		console.log(eventResponse);
+		clientDB[eventResponse.clid] = eventResponse;
 
-	backendConnector.getUserByAppLink(eventResponse.client_unique_identifier).then((user) => {
-		teamspeakClient.send('sendtextmessage', {targetmode: 1, target: eventResponse.clid, msg: 'Willkommen ' + user.get('username')}, () => {});
-		teamspeakClient.send('servergroupsbyclientid', {cldbid: eventResponse.client_database_id}, (err, response) => {
-			if (!err) {
-				if (!Array.isArray(response)) {
-					response = [response];
-				}
+		backendConnector.getUserByAppLink(eventResponse.client_unique_identifier).then((user) => {
+			teamspeakClient.send('sendtextmessage', {targetmode: 1, target: eventResponse.clid, msg: 'Willkommen ' + user.get('username')}, () => {});
+			teamspeakClient.send('servergroupsbyclientid', {cldbid: eventResponse.client_database_id}, (err, response) => {
+				if (!err) {
+					if (!Array.isArray(response)) {
+						response = [response];
+					}
 
-				let filteredResponse = response.filter((v) => {
-					return v.sgid === config.config.teamspeak.registeredgrpid;
-				});
-				if (filteredResponse.length === 0)  {
-					teamspeakClient.send('servergroupaddclient', {sgid: config.config.teamspeak.registeredgrpid, cldbid: eventResponse.client_database_id}, (err, response) => {
-						console.log(err);
+					let filteredResponse = response.filter((v) => {
+						return v.sgid === config.config.teamspeak.registeredgrpid;
 					});
+					if (filteredResponse.length === 0)  {
+						teamspeakClient.send('servergroupaddclient', {sgid: config.config.teamspeak.registeredgrpid, cldbid: eventResponse.client_database_id}, (err, response) => {
+							console.log(err);
+						});
+					}
 				}
-			}
-		});
-	}).catch(() => {
-		teamspeakClient.send('sendtextmessage', {targetmode: 1, target: eventResponse.clid, msg: `
-            Willkommen!
+			});
+		}).catch(() => {
+			teamspeakClient.send('sendtextmessage', {targetmode: 1, target: eventResponse.clid, msg: `
+          Willkommen!
 
 Du besitzt aktuell keine Rechte.
 
-Zum Anmelden    [b].login <Benutzername> <Password>[/b]
 Zum Registrieren [b].register <Benutzername> <Email> <Password>[/b]
+Zum Anmelden    [b].login <Benutzername> <Password>[/b]
 
 [u]Die EMail adresse wird nur zum zurücksetzten des Passwords benötigt[/u]
-`}, (err) => {
-			console.log(err);
-		});
-		teamspeakClient.send('servergroupsbyclientid', {cldbid: eventResponse.client_database_id}, (err, response) => {
-			if (!err) {
-				if (!Array.isArray(response)) {
-					response = [response];
-				}
+	`}, (err) => {
+				console.log(err);
+			});
+			teamspeakClient.send('servergroupsbyclientid', {cldbid: eventResponse.client_database_id}, (err, response) => {
+				if (!err) {
+					if (!Array.isArray(response)) {
+						response = [response];
+					}
 
-				response.forEach((servergroup) => {
-					teamspeakClient.send('servergroupdelclient', {sgid: servergroup.sgid, cldbid: servergroup.cldbid});
-				});
-			}
+					response.forEach((servergroup) => {
+						teamspeakClient.send('servergroupdelclient', {sgid: servergroup.sgid, cldbid: servergroup.cldbid});
+					});
+				}
+			});
 		});
-	});
+	}
+});
+
+teamspeakClient.on('clientleftview', (eventResponse) => {
+	delete clientDB[eventResponse.clid];
 });
 
 teamspeakClient.on('textmessage', (response) => {
