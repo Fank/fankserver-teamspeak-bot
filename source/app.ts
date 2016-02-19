@@ -37,6 +37,12 @@ class LinkExistsError extends Error {
 		super();
 	}
 }
+class LinkNotExistsError extends Error {
+	constructor() {
+		this.name = "LinkNotExistsError";
+		super();
+	}
+}
 class LinkFailedError extends Error {
 	constructor() {
 		this.name = "LinkFailedError";
@@ -76,12 +82,12 @@ class BackendConnector {
 									resolve(user);
 								}
 								else {
-									reject();
+									reject(new UserNotExistsError());
 								}
 							});
 					}
 					else {
-						reject();
+						reject(new LinkNotExistsError());
 					}
 				});
 			});
@@ -91,32 +97,65 @@ class BackendConnector {
 		return new Promise<IAppLinkSchema>((resolve, reject) => {
 			let AppLink = this._mongooseConnection.model<IAppLinkSchema>("AppLink");
 
-			var appLink = new AppLink({
-				"provider": "Teamspeak3",
-				"account_id": appAccountId
-			});
-			appLink.save<IAppLinkSchema>((err, appLinkDocument) => {
-				if (err) {
-					// Duplicate entry
-					if (err.code === 11000) {
-						reject(new LinkExistsError());
+			AppLink
+				.findOne({
+					"provider": "Teamspeak3",
+					"account_id": appAccountId
+				})
+				.exec((err, appLink) => {
+					if (appLink) {
+						this._mongooseConnection.model<IUserSchema>("User")
+							.findOne({
+								"appLinks": appLink._id
+							})
+							.exec((err, user) => {
+								if (!err && !user) {
+									(<any>userDocument).update({$push: {"appLinks": appLink._id}}, (err) => {
+										if (err) {
+											reject(new LinkFailedError());
+										}
+										else {
+											resolve(appLink);
+										}
+									});
+								}
+								else if (!err && user) {
+									reject(new LinkExistsError());
+								}
+								else {
+									reject(new UnkownError());
+								}
+							});
 					}
-					// unkown
 					else {
-						reject(new UnkownError());
+						var appLink = new AppLink({
+							"provider": "Teamspeak3",
+							"account_id": appAccountId
+						});
+						appLink.save<IAppLinkSchema>((err, appLinkDocument) => {
+							if (err) {
+								// Duplicate entry
+								if (err.code === 11000) {
+									reject(new LinkExistsError());
+								}
+								// unkown
+								else {
+									reject(new UnkownError());
+								}
+							}
+							else {
+								(<any>userDocument).update({$push: {"appLinks": appLink._id}}, (err) => {
+									if (err) {
+										reject(new LinkFailedError());
+									}
+									else {
+										resolve(appLinkDocument);
+									}
+								});
+							}
+						});
 					}
-				}
-				else {
-					(<any>userDocument).update({$push: {"appLinks": appLink._id}}, (err) => {
-						if (err) {
-							reject(new LinkFailedError());
-						}
-						else {
-							resolve(appLinkDocument);
-						}
-					});
-				}
-			});
+				})
 		});
 	}
 
