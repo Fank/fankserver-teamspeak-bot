@@ -3,10 +3,8 @@ import path = require("path");
 import toml = require("toml");
 
 export class Config {
-	private _configPath: string = path.join(__dirname, '..', '..', 'config.toml');
+	private _configPath: string = path.join(__dirname, "..", "..", "config.toml");
 	private _config: any;
-
-	constructor() {}
 
 	get config() {
 		return this._config;
@@ -18,7 +16,7 @@ export class Config {
 		}
 		catch (e) {
 			try {
-				var configContent = fs.readFileSync(this._configPath + '.example');
+				var configContent = fs.readFileSync(this._configPath + ".example");
 				fs.writeFileSync(this._configPath, configContent);
 			}
 			catch (e) {

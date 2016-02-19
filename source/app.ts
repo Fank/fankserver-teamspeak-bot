@@ -1,10 +1,10 @@
-import {Promise} from 'es6-promise';
-import mongoose = require('mongoose');
-import TeamSpeakClient = require('node-teamspeak');
-import splitargs = require('splitargs');
+import {Promise} from "es6-promise";
+import mongoose = require("mongoose");
+import TeamSpeakClient = require("node-teamspeak");
+import splitargs = require("splitargs");
 
-require('./model/applink');
-require('./model/user');
+require("./model/applink");
+require("./model/user");
 
 import {Config} from "./config/config";
 import {IAppLinkSchema} from "./model/applink";
@@ -15,31 +15,31 @@ config.loadConfig();
 
 class UnkownError extends Error {
 	constructor() {
-		this.name = 'UnkownError';
+		this.name = "UnkownError";
 		super();
 	}
 }
 class UserNotExistsError extends Error {
 	constructor() {
-		this.name = 'UserNotExistsError';
+		this.name = "UserNotExistsError";
 		super();
 	}
 }
 class UserExistsError extends Error {
 	constructor() {
-		this.name = 'UserExistsError';
+		this.name = "UserExistsError";
 		super();
 	}
 }
 class LinkExistsError extends Error {
 	constructor() {
-		this.name = 'LinkExistsError';
+		this.name = "LinkExistsError";
 		super();
 	}
 }
 class LinkFailedError extends Error {
 	constructor() {
-		this.name = 'LinkFailedError';
+		this.name = "LinkFailedError";
 		super();
 	}
 }
@@ -53,23 +53,23 @@ class BackendConnector {
 
 	private _connectMongoose(dns: string) {
 		this._mongooseConnection = mongoose.createConnection(dns);
-		this._mongooseConnection.on('error', (err) => {
+		this._mongooseConnection.on("error", (err) => {
 			console.error(err);
 		});
 	}
 
 	getUserByAppLink(appAccountId: string): Promise<IUserSchema> {
 		return new Promise<any>((resolve, reject) => {
-			this._mongooseConnection.model<IAppLinkSchema>('AppLink')
+			this._mongooseConnection.model<IAppLinkSchema>("AppLink")
 				.findOne({
-					'provider': 'Teamspeak3',
-					'account_id': appAccountId
+					"provider": "Teamspeak3",
+					"account_id": appAccountId
 				})
 				.exec((err, appLink) => {
 					if (appLink) {
-						this._mongooseConnection.model<IUserSchema>('User')
+						this._mongooseConnection.model<IUserSchema>("User")
 							.findOne({
-								'appLinks': appLink._id
+								"appLinks": appLink._id
 							})
 							.exec((err, user) => {
 								if (user) {
@@ -89,11 +89,11 @@ class BackendConnector {
 
 	linkAppToUser(userDocument: IUserSchema, appAccountId: string): Promise<IAppLinkSchema> {
 		return new Promise<IAppLinkSchema>((resolve, reject) => {
-			let AppLink = this._mongooseConnection.model<IAppLinkSchema>('AppLink');
+			let AppLink = this._mongooseConnection.model<IAppLinkSchema>("AppLink");
 
 			var appLink = new AppLink({
-				'provider': 'Teamspeak3',
-				'account_id': appAccountId
+				"provider": "Teamspeak3",
+				"account_id": appAccountId
 			});
 			appLink.save<IAppLinkSchema>((err, appLinkDocument) => {
 				if (err) {
@@ -108,7 +108,7 @@ class BackendConnector {
 					}
 				}
 				else {
-					(<any>userDocument).update({$push: {'appLinks': appLink._id}}, (err) => {
+					(<any>userDocument).update({$push: {"appLinks": appLink._id}}, (err) => {
 						if (err) {
 							reject(new LinkFailedError());
 						}
@@ -123,7 +123,7 @@ class BackendConnector {
 
 	registerUser(username: string, email: string, password: string, appAccountId: string): Promise<IUserSchema> {
 		return new Promise<IUserSchema>((resolve, reject) => {
-			let User = this._mongooseConnection.model<IUserSchema>('User');
+			let User = this._mongooseConnection.model<IUserSchema>("User");
 
 			var user = new User({
 				username: username,
@@ -154,7 +154,7 @@ class BackendConnector {
 
 	loginUser(username: string, password: string, appAccountId: string): Promise<IUserSchema> {
 		return new Promise<IUserSchema>((resolve, reject) => {
-			this._mongooseConnection.model<IUserSchema>('User')
+			this._mongooseConnection.model<IUserSchema>("User")
 				.findOne({ username: username }, (err, userDocument) => {
 					if (userDocument) {
 						userDocument.validatePassword(password, (valid: boolean) => {
@@ -177,39 +177,39 @@ var backendConnector = new BackendConnector(config.config);
 
 var clientDB = {};
 var teamspeakClient = new TeamSpeakClient(config.config.teamspeak.host);
-teamspeakClient.on('error', (err) => {
+teamspeakClient.on("error", (err) => {
 	console.log(err);
 });
-teamspeakClient.send('login', {client_login_name: config.config.teamspeak.user, client_login_password: config.config.teamspeak.password}, (err, response, rawResponse) => {
+teamspeakClient.send("login", {client_login_name: config.config.teamspeak.user, client_login_password: config.config.teamspeak.password}, (err, response, rawResponse) => {
 	console.log(err);
-	teamspeakClient.send('use', {sid: 1}, (err, response, rawResponse) => {
+	teamspeakClient.send("use", {sid: 1}, (err, response, rawResponse) => {
 		console.log(err);
-		teamspeakClient.send('clientupdate', {client_nickname: config.config.teamspeak.nickname}, (err, response, rawResponse) => {
+		teamspeakClient.send("clientupdate", {client_nickname: config.config.teamspeak.nickname}, (err, response, rawResponse) => {
 			console.log(err);
-			teamspeakClient.send('servernotifyregister', {event: 'server'}, (err, response, rawResponse) => {
+			teamspeakClient.send("servernotifyregister", {event: "server"}, (err, response, rawResponse) => {
 				console.log(err);
 			});
-			teamspeakClient.send('servernotifyregister', {event: 'textprivate'}, (err, response, rawResponse) => {
+			teamspeakClient.send("servernotifyregister", {event: "textprivate"}, (err, response, rawResponse) => {
 				console.log(err);
 			});
 
 			// Keep alive loop
 			setInterval(() => {
-				teamspeakClient.send('clientlist', () => {});
+				teamspeakClient.send("clientlist");
 			}, 15000);
 		});
 	});
 });
 
-teamspeakClient.on('cliententerview', (eventResponse) => {
+teamspeakClient.on("cliententerview", (eventResponse) => {
 	// Ignore serveradmin
 	if (eventResponse.client_database_id > 1) {
 		console.log(eventResponse);
 		clientDB[eventResponse.clid] = eventResponse;
 
 		backendConnector.getUserByAppLink(eventResponse.client_unique_identifier).then((user) => {
-			teamspeakClient.send('sendtextmessage', {targetmode: 1, target: eventResponse.clid, msg: 'Willkommen ' + user.get('username')}, () => {});
-			teamspeakClient.send('servergroupsbyclientid', {cldbid: eventResponse.client_database_id}, (err, response) => {
+			teamspeakClient.send("sendtextmessage", {targetmode: 1, target: eventResponse.clid, msg: "Willkommen " + user.get("username")});
+			teamspeakClient.send("servergroupsbyclientid", {cldbid: eventResponse.client_database_id}, (err, response) => {
 				if (!err) {
 					if (!Array.isArray(response)) {
 						response = [response];
@@ -219,14 +219,14 @@ teamspeakClient.on('cliententerview', (eventResponse) => {
 						return v.sgid === config.config.teamspeak.registeredgrpid;
 					});
 					if (filteredResponse.length === 0)  {
-						teamspeakClient.send('servergroupaddclient', {sgid: config.config.teamspeak.registeredgrpid, cldbid: eventResponse.client_database_id}, (err, response) => {
+						teamspeakClient.send("servergroupaddclient", {sgid: config.config.teamspeak.registeredgrpid, cldbid: eventResponse.client_database_id}, (err, response) => {
 							console.log(err);
 						});
 					}
 				}
 			});
 		}).catch(() => {
-			teamspeakClient.send('sendtextmessage', {targetmode: 1, target: eventResponse.clid, msg: `
+			teamspeakClient.send("sendtextmessage", {targetmode: 1, target: eventResponse.clid, msg: `
           Willkommen!
 
 Du besitzt aktuell keine Rechte.
@@ -238,14 +238,14 @@ Zum Anmelden    [b].login <Benutzername> <Password>[/b]
 	`}, (err) => {
 				console.log(err);
 			});
-			teamspeakClient.send('servergroupsbyclientid', {cldbid: eventResponse.client_database_id}, (err, response) => {
+			teamspeakClient.send("servergroupsbyclientid", {cldbid: eventResponse.client_database_id}, (err, response) => {
 				if (!err) {
 					if (!Array.isArray(response)) {
 						response = [response];
 					}
 
 					response.forEach((servergroup) => {
-						teamspeakClient.send('servergroupdelclient', {sgid: servergroup.sgid, cldbid: servergroup.cldbid});
+						teamspeakClient.send("servergroupdelclient", {sgid: servergroup.sgid, cldbid: servergroup.cldbid});
 					});
 				}
 			});
@@ -253,54 +253,54 @@ Zum Anmelden    [b].login <Benutzername> <Password>[/b]
 	}
 });
 
-teamspeakClient.on('clientleftview', (eventResponse) => {
+teamspeakClient.on("clientleftview", (eventResponse) => {
 	delete clientDB[eventResponse.clid];
 });
 
-teamspeakClient.on('textmessage', (response) => {
+teamspeakClient.on("textmessage", (response) => {
 	if (response.invokeruid !== config.config.teamspeak.nickname) {
-		if (response.msg.charAt(0) === '.') {
+		if (response.msg.charAt(0) === ".") {
 			let args = splitargs(response.msg.substr(1));
 
-			switch (args[0] || '') {
-				case 'register':
+			switch (args[0] || "") {
+				case "register":
 					if (args.length === 4) {
-						backendConnector.registerUser(args[1], args[2].replace(/^\[URL=mailto:[^\]]+\]([^\[]+)\[\/URL\]$/, (match, p1) => { return p1 }), args[3], clientDB[response.invokerid].client_unique_identifier).then((userDocument) => {
-							teamspeakClient.send('sendtextmessage', {targetmode: 1, target: response.invokerid, msg: 'Registrierung erfolgreich'});
-							teamspeakClient.send('servergroupaddclient', {sgid: config.config.teamspeak.registeredgrpid, cldbid: clientDB[response.invokerid].client_database_id});
+						backendConnector.registerUser(args[1], args[2].replace(/^\[URL=mailto:[^\]]+\]([^\[]+)\[\/URL\]$/, (match, p1) => { return p1; }), args[3], clientDB[response.invokerid].client_unique_identifier).then((userDocument) => {
+							teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Registrierung erfolgreich"});
+							teamspeakClient.send("servergroupaddclient", {sgid: config.config.teamspeak.registeredgrpid, cldbid: clientDB[response.invokerid].client_database_id});
 						}).catch((err) => {
-							teamspeakClient.send('sendtextmessage', {targetmode: 1, target: response.invokerid, msg: err.name}, (err) => {
+							teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: err.name}, (err) => {
 								console.log(err);
 							});
 						});
 					}
 					else {
-						teamspeakClient.send('sendtextmessage', {targetmode: 1, target: response.invokerid, msg: 'Parameter falsch\n.register <Username> <Email> <Password>'}, (err) => {
+						teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Parameter falsch\n.register <Username> <Email> <Password>"}, (err) => {
 							console.log(err);
 						});
 					}
 					break;
 
-				case 'login':
+				case "login":
 					if (args.length === 3) {
 						backendConnector.loginUser(args[1], args[2], clientDB[response.invokerid].client_unique_identifier).then((userDocument) => {
-							teamspeakClient.send('sendtextmessage', {targetmode: 1, target: response.invokerid, msg: 'Login erfolgreich'});
-							teamspeakClient.send('servergroupaddclient', {sgid: config.config.teamspeak.registeredgrpid, cldbid: clientDB[response.invokerid].client_database_id});
+							teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Login erfolgreich"});
+							teamspeakClient.send("servergroupaddclient", {sgid: config.config.teamspeak.registeredgrpid, cldbid: clientDB[response.invokerid].client_database_id});
 						}).catch((err) => {
-							teamspeakClient.send('sendtextmessage', {targetmode: 1, target: response.invokerid, msg: err.name}, (err) => {
+							teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: err.name}, (err) => {
 								console.log(err);
 							});
 						});
 					}
 					else {
-						teamspeakClient.send('sendtextmessage', {targetmode: 1, target: response.invokerid, msg: 'Parameter falsch\n.login <Username> <Password>'}, (err) => {
+						teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Parameter falsch\n.login <Username> <Password>"}, (err) => {
 							console.log(err);
 						});
 					}
 					break;
 
 				default:
-					teamspeakClient.send('sendtextmessage', {targetmode: 1, target: response.invokerid, msg: 'Befehl nicht bekannt'}, (err) => {
+					teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Befehl nicht bekannt"}, (err) => {
 						console.log(err);
 					});
 			}

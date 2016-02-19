@@ -2,9 +2,9 @@ import mongoose = require("mongoose");
 import timestamp = require("mongoose-timestamp");
 
 export interface IAppLinkSchema extends mongoose.Document {
-	provider: string,
-	account_id: string,
-	verifiedAt: Date
+	provider: string;
+	account_id: string;
+	verifiedAt: Date;
 }
 
 var AppLinkSchema = new mongoose.Schema({
@@ -21,4 +21,4 @@ AppLinkSchema.index({
 });
 AppLinkSchema.plugin(timestamp);
 
-mongoose.model('AppLink', AppLinkSchema);
+mongoose.model("AppLink", AppLinkSchema);
