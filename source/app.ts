@@ -8,7 +8,7 @@ require("./model/user");
 
 import {Config} from "./config/config";
 import {IAppLinkSchema} from "./model/applink";
-import {IUserSchema} from "./model/user";
+import {IUserSchema, UserValidator} from "./model/user";
 
 var config = new Config();
 config.loadConfig();
@@ -259,56 +259,56 @@ teamspeakClient.on("clientleftview", (eventResponse) => {
 	delete clientDB[eventResponse.clid];
 });
 
+var registerRegex = /^\s*\.register\s+(\S+)\s+(\S+)\s+(\S+)\s*$/i;
+var loginRegex = /^\s*\.login\s+(\S+)\s+(\S+)\s*$/i;
 teamspeakClient.on("textmessage", (response) => {
 	if (response.invokeruid !== config.config.teamspeak.nickname) {
-		if (response.msg.charAt(0) === ".") {
-			let args = splitargs(response.msg.substr(1));
+		// Register
+		let match = registerRegex.exec(response.msg)
+		if (match) {
+			// remove BBCode from email
+			match[2] = match[2].replace(/^\[URL=mailto:[^\]]+\]([^\[]+)\[\/URL\]$/, (match, p1) => { return p1; });
 
-			switch (args[0] || "") {
-				case "register":
-					if (args.length === 4) {
-						backendConnector.registerUser(args[1], args[2].replace(/^\[URL=mailto:[^\]]+\]([^\[]+)\[\/URL\]$/, (match, p1) => { return p1; }), args[3], clientDB[response.invokerid].client_unique_identifier).then((userDocument) => {
-							teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Registrierung erfolgreich, du wurdest automatisch eingeloggt"});
-							teamspeakClient.send("servergroupaddclient", {sgid: config.config.teamspeak.registeredgrpid, cldbid: clientDB[response.invokerid].client_database_id});
-						}).catch((err) => {
-							teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: err.name}, (err) => {
-								console.log(err);
-							});
-						});
-					}
-					else {
-						teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Parameter falsch\n.register Benutzername Email Password"}, (err) => {
-							console.log(err);
-						});
-					}
-					break;
-
-				case "login":
-					if (args.length === 3) {
-						backendConnector.loginUser(args[1], args[2], clientDB[response.invokerid].client_unique_identifier).then((userDocument) => {
-							teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Login erfolgreich"});
-							teamspeakClient.send("servergroupaddclient", {sgid: config.config.teamspeak.registeredgrpid, cldbid: clientDB[response.invokerid].client_database_id});
-						}).catch((err) => {
-							teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: err.name}, (err) => {
-								console.log(err);
-							});
-						});
-					}
-					else {
-						teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Parameter falsch\n.login Benutzername Password"}, (err) => {
-							console.log(err);
-						});
-					}
-					break;
-
-				default:
-					teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Befehl nicht bekannt"}, (err) => {
+			if (!UserValidator.username(match[1])) {
+				teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Benutzername muss 4 oder mehr Zeichen (A-Z, 0-9, -, _) beinhanten"});
+			}
+			else if (!UserValidator.email(match[2])) {
+				teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "EMail ist nicht gültig"});
+			}
+			else if (!UserValidator.password(match[3])) {
+				teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Passwort muss 6 oder mehr Zeichen beinhanten"});
+			}
+			else {
+				backendConnector.registerUser(match[1], match[2], match[3], clientDB[response.invokerid].client_unique_identifier).then((userDocument) => {
+					teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Registrierung erfolgreich, du wurdest automatisch eingeloggt"});
+					teamspeakClient.send("servergroupaddclient", {sgid: config.config.teamspeak.registeredgrpid, cldbid: clientDB[response.invokerid].client_database_id});
+				}).catch((err) => {
+					teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: err.name}, (err) => {
 						console.log(err);
 					});
+				});
 			}
 		}
-		else {
-			// Trash talk
+
+		// Login
+		match = loginRegex.exec(response.msg);
+		if (match) {
+			if (!UserValidator.username(match[1])) {
+				teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Benutzername muss 4 oder mehr Zeichen (A-Z, 0-9, -, _) beinhanten"});
+			}
+			else if (!UserValidator.password(match[2])) {
+				teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Passwort muss 6 oder mehr Zeichen beinhanten"});
+			}
+			else {
+				backendConnector.loginUser(match[1], match[2], clientDB[response.invokerid].client_unique_identifier).then((userDocument) => {
+					teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Login erfolgreich"});
+					teamspeakClient.send("servergroupaddclient", {sgid: config.config.teamspeak.registeredgrpid, cldbid: clientDB[response.invokerid].client_database_id});
+				}).catch((err) => {
+					teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: err.name}, (err) => {
+						console.log(err);
+					});
+				});
+			}
 		}
 	}
 });
