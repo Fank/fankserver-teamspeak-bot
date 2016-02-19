@@ -233,8 +233,8 @@ teamspeakClient.on("cliententerview", (eventResponse) => {
 
 Du besitzt aktuell keine Rechte.
 
-Zum Registrieren [b].register <Benutzername> <Email> <Password>[/b]
-Zum Anmelden    [b].login <Benutzername> <Password>[/b]
+Zum Registrieren [b].register Benutzername Email Password[/b]
+Zum Anmelden    [b].login Benutzername Password[/b]
 
 [u]Die EMail adresse wird nur zum zurücksetzten des Passwords benötigt[/u]
 	`}, (err) => {
@@ -268,7 +268,7 @@ teamspeakClient.on("textmessage", (response) => {
 				case "register":
 					if (args.length === 4) {
 						backendConnector.registerUser(args[1], args[2].replace(/^\[URL=mailto:[^\]]+\]([^\[]+)\[\/URL\]$/, (match, p1) => { return p1; }), args[3], clientDB[response.invokerid].client_unique_identifier).then((userDocument) => {
-							teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Registrierung erfolgreich"});
+							teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Registrierung erfolgreich, du wurdest automatisch eingeloggt"});
 							teamspeakClient.send("servergroupaddclient", {sgid: config.config.teamspeak.registeredgrpid, cldbid: clientDB[response.invokerid].client_database_id});
 						}).catch((err) => {
 							teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: err.name}, (err) => {
@@ -277,7 +277,7 @@ teamspeakClient.on("textmessage", (response) => {
 						});
 					}
 					else {
-						teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Parameter falsch\n.register <Username> <Email> <Password>"}, (err) => {
+						teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Parameter falsch\n.register Benutzername Email Password"}, (err) => {
 							console.log(err);
 						});
 					}
@@ -295,7 +295,7 @@ teamspeakClient.on("textmessage", (response) => {
 						});
 					}
 					else {
-						teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Parameter falsch\n.login <Username> <Password>"}, (err) => {
+						teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Parameter falsch\n.login Benutzername Password"}, (err) => {
 							console.log(err);
 						});
 					}
