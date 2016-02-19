@@ -97,7 +97,6 @@ class BackendConnector {
 			});
 			appLink.save<IAppLinkSchema>((err, appLinkDocument) => {
 				if (err) {
-					userDocument.remove();
 					// Duplicate entry
 					if (err.code === 11000) {
 						reject(new LinkExistsError());
@@ -145,7 +144,10 @@ class BackendConnector {
 					this.linkAppToUser(userDocument, appAccountId).then((appLink) => {
 						resolve(userDocument);
 					}).catch((err) => {
-						reject(err);
+						// Remove user account if app link failed
+						userDocument.remove(() => {
+							reject(err);
+						});
 					});
 				}
 			});
