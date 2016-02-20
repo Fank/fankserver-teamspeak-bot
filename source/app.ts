@@ -270,7 +270,7 @@ teamspeakClient.on("cliententerview", (eventResponse) => {
 			teamspeakClient.send("sendtextmessage", {targetmode: 1, target: eventResponse.clid, msg: `
           Willkommen!
 
-Du besitzt aktuell keine Rechte.
+Deine Teamspeak Id ist uns nicht bekannt.
 
 Zum Registrieren [b].register Benutzername Email Password[/b]
 Zum Anmelden    [b].login Benutzername Password[/b]
