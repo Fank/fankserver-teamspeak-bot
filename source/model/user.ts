@@ -7,6 +7,18 @@ const usernameRegex = /^([\w\-]{4,})$/i;
 const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/i;
 const passwordRegex = /^(\S{6,}$)/i;
 
+export enum UserTags {
+	TeamspeakAdmin = <any>"Teamspeak Admin",
+	TeamspeakMod = <any>"Teamspeak Mod",
+
+	GameLeagueOfLegends = <any>"League of Legends",
+	GameRainbow6 = <any>"Rainbow 6",
+	GameStarCitizen = <any>"Star Citizen",
+	GameTheDivision = <any>"The Division",
+
+	SubTier1 = <any>"SubTier1"
+}
+
 export interface IUserSchema extends mongoose.Document {
 	username: string;
 	password: string;
@@ -14,6 +26,7 @@ export interface IUserSchema extends mongoose.Document {
 	email: string;
 	avatar: string;
 	appLinks: Array<number>;
+	tags: Array<UserTags>;
 	validatePassword(password: string, callback: (valid: boolean) => void);
 }
 
@@ -31,6 +44,7 @@ export class UserValidator {
 	}
 }
 
+let userTagValues = Object.keys(UserTags).filter((element, index) => (index % 2) !== 0);
 var UserSchema = new mongoose.Schema({
 	username: {type: String, required: true, unique: true, dropDups: true},
 	password: {type: String, required: true},
@@ -38,6 +52,7 @@ var UserSchema = new mongoose.Schema({
 	email: {type: String, required: true, unique: true, dropDups: true},
 	avatar: {type: String, default: "/assets/images/user.jpg"},
 	appLinks: [{type: mongoose.Schema.Types.ObjectId, ref: "AppLink", required: true}],
+	tags: [{type: String, enum: userTagValues, required: true, unique: true}]
 });
 UserSchema.plugin(timestamp);
 UserSchema.pre("save", function(next) {

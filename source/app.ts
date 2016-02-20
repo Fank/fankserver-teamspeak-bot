@@ -1,16 +1,16 @@
 import {Promise} from "es6-promise";
 import mongoose = require("mongoose");
 import TeamSpeakClient = require("node-teamspeak");
-import splitargs = require("splitargs");
+import _ = require("underscore");
 
 require("./model/applink");
 require("./model/user");
 
 import {Config} from "./config/config";
 import {IAppLinkSchema} from "./model/applink";
-import {IUserSchema, UserValidator} from "./model/user";
+import {IUserSchema, UserValidator, UserTags} from "./model/user";
 
-var config = new Config();
+let config = new Config();
 config.loadConfig();
 
 class UnkownError extends Error {
@@ -48,6 +48,11 @@ class LinkFailedError extends Error {
 		this.name = "LinkFailedError";
 		super();
 	}
+}
+
+enum ServergroupMapping {
+	TeamspeakAdmin = 6,
+	TeamspeakMod = 22
 }
 
 class BackendConnector {
@@ -171,7 +176,7 @@ class BackendConnector {
 			user.save<IUserSchema>((err, userDocument) => {
 				if (err) {
 					// Duplicate entry
-					if (err.code == 11000) {
+					if (err.code === 11000) {
 						reject(new UserExistsError());
 					}
 					// unkown
@@ -214,10 +219,10 @@ class BackendConnector {
 	}
 }
 
-var backendConnector = new BackendConnector(config.config);
+let backendConnector = new BackendConnector(config.config);
 
-var clientDB = {};
-var teamspeakClient = new TeamSpeakClient(config.config.teamspeak.host);
+let clientDB = {};
+let teamspeakClient = new TeamSpeakClient(config.config.teamspeak.host);
 teamspeakClient.on("error", (err) => {
 	console.log(err);
 });
@@ -256,14 +261,29 @@ teamspeakClient.on("cliententerview", (eventResponse) => {
 						response = [response];
 					}
 
-					let filteredResponse = response.filter((v) => {
-						return v.sgid === config.config.teamspeak.registeredgrpid;
+					let currentServergroups = response.map(servergroup => servergroup.sgid);
+					let userServergroups = [config.config.teamspeak.registeredgrpid];
+					user.tags.forEach((tag) => {
+						if (ServergroupMapping[UserTags[tag]]) {
+							userServergroups.push(ServergroupMapping[UserTags[tag]]);
+						}
 					});
-					if (filteredResponse.length === 0)  {
-						teamspeakClient.send("servergroupaddclient", {sgid: config.config.teamspeak.registeredgrpid, cldbid: eventResponse.client_database_id}, (err, response) => {
-							console.log(err);
+
+					// Remove servergroups
+					_
+						.difference(currentServergroups, userServergroups)
+						.filter(v => v > 5) // Ignore queries & templates
+						.forEach((servergroupId) => {
+							teamspeakClient.send("servergroupdelclient", {sgid: servergroupId, cldbid: eventResponse.client_database_id});
 						});
-					}
+
+					// Add servergroups
+					_
+						.difference(userServergroups, currentServergroups)
+						.filter(v => v > 5) // Ignore queries & templates
+						.forEach((servergroupId) => {
+							teamspeakClient.send("servergroupaddclient", {sgid: servergroupId, cldbid: eventResponse.client_database_id});
+						});
 				}
 			});
 		}).catch(() => {
@@ -298,12 +318,12 @@ teamspeakClient.on("clientleftview", (eventResponse) => {
 	delete clientDB[eventResponse.clid];
 });
 
-var registerRegex = /^\s*\.register\s+(\S+)\s+(\S+)\s+(\S+)\s*$/i;
-var loginRegex = /^\s*\.login\s+(\S+)\s+(\S+)\s*$/i;
+let registerRegex = /^\s*\.register\s+(\S+)\s+(\S+)\s+(\S+)\s*$/i;
+let loginRegex = /^\s*\.login\s+(\S+)\s+(\S+)\s*$/i;
 teamspeakClient.on("textmessage", (response) => {
 	if (response.invokeruid !== config.config.teamspeak.nickname) {
 		// Register
-		let match = registerRegex.exec(response.msg)
+		let match = registerRegex.exec(response.msg);
 		if (match) {
 			// remove BBCode from email
 			match[2] = match[2].replace(/^\[URL=mailto:[^\]]+\]([^\[]+)\[\/URL\]$/, (match, p1) => { return p1; });
@@ -321,10 +341,8 @@ teamspeakClient.on("textmessage", (response) => {
 				backendConnector.registerUser(match[1], match[2], match[3], clientDB[response.invokerid].client_unique_identifier).then((userDocument) => {
 					teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Registrierung erfolgreich, du wurdest automatisch eingeloggt"});
 					teamspeakClient.send("servergroupaddclient", {sgid: config.config.teamspeak.registeredgrpid, cldbid: clientDB[response.invokerid].client_database_id});
-				}).catch((err) => {
-					teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: err.name}, (err) => {
-						console.log(err);
-					});
+				}).catch((registerErr) => {
+					teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: registerErr.name});
 				});
 			}
 		}
@@ -342,10 +360,8 @@ teamspeakClient.on("textmessage", (response) => {
 				backendConnector.loginUser(match[1], match[2], clientDB[response.invokerid].client_unique_identifier).then((userDocument) => {
 					teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Login erfolgreich"});
 					teamspeakClient.send("servergroupaddclient", {sgid: config.config.teamspeak.registeredgrpid, cldbid: clientDB[response.invokerid].client_database_id});
-				}).catch((err) => {
-					teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: err.name}, (err) => {
-						console.log(err);
-					});
+				}).catch((loginErr) => {
+					teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: loginErr.name});
 				});
 			}
 		}
