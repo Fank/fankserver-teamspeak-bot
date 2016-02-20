@@ -45,7 +45,7 @@ export class UserValidator {
 }
 
 let userTagValues = Object.keys(UserTags).filter((element, index) => (index % 2) !== 0);
-var UserSchema = new mongoose.Schema({
+let UserSchema = new mongoose.Schema({
 	username: {type: String, required: true, unique: true, dropDups: true},
 	password: {type: String, required: true},
 	salt: {type: String, required: false},

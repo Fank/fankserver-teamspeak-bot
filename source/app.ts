@@ -58,15 +58,8 @@ enum ServergroupMapping {
 class BackendConnector {
 	private _mongooseConnection: mongoose.Connection;
 
-	constructor(config: any) {
-		this._connectMongoose(config.mongo.db);
-	}
-
-	private _connectMongoose(dns: string) {
-		this._mongooseConnection = mongoose.createConnection(dns);
-		this._mongooseConnection.on("error", (err) => {
-			console.error(err);
-		});
+	constructor(conf: any) {
+		this._connectMongoose(conf.mongo.db);
 	}
 
 	getUserByAppLink(appAccountId: string): Promise<IUserSchema> {
@@ -133,7 +126,7 @@ class BackendConnector {
 							});
 					}
 					else {
-						var appLink = new AppLink({
+						let appLink = new AppLink({
 							"provider": "Teamspeak3",
 							"account_id": appAccountId
 						});
@@ -160,7 +153,7 @@ class BackendConnector {
 							}
 						});
 					}
-				})
+				});
 		});
 	}
 
@@ -168,7 +161,7 @@ class BackendConnector {
 		return new Promise<IUserSchema>((resolve, reject) => {
 			let User = this._mongooseConnection.model<IUserSchema>("User");
 
-			var user = new User({
+			let user = new User({
 				username: username,
 				password: password,
 				email: email
@@ -215,6 +208,13 @@ class BackendConnector {
 						reject(new UserNotExistsError());
 					}
 				});
+		});
+	}
+
+	private _connectMongoose(dns: string) {
+		this._mongooseConnection = mongoose.createConnection(dns);
+		this._mongooseConnection.on("error", (err) => {
+			console.error(err);
 		});
 	}
 }

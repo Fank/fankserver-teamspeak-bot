@@ -7,7 +7,7 @@ export interface IAppLinkSchema extends mongoose.Document {
 	verifiedAt: Date;
 }
 
-var AppLinkSchema = new mongoose.Schema({
+let AppLinkSchema = new mongoose.Schema({
 	provider: {type: String, required: true},
 	account_id: {type: String, required: true},
 	verifiedAt: Date

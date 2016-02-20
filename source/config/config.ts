@@ -16,7 +16,7 @@ export class Config {
 		}
 		catch (e) {
 			try {
-				var configContent = fs.readFileSync(this._configPath + ".example");
+				let configContent = fs.readFileSync(this._configPath + ".example");
 				fs.writeFileSync(this._configPath, configContent);
 			}
 			catch (e) {
