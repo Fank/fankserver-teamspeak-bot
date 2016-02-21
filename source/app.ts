@@ -288,17 +288,18 @@ teamspeakClient.on("cliententerview", (eventResponse) => {
 			});
 		}).catch(() => {
 			teamspeakClient.send("sendtextmessage", {targetmode: 1, target: eventResponse.clid, msg: `
-          Willkommen!
+Hallo Keule!
 
-Deine Teamspeak Id ist uns nicht bekannt.
+Aufgrund einiger Änderungen unseres Teamspeaks müssen die Rechte der User neu vergeben werden.
 
-Zum Registrieren [b].register Benutzername Email Password[/b]
-Zum Anmelden    [b].login Benutzername Password[/b]
+Zunächst würden wir dich zu reinen Identifikationszwecken bitten, Folgendes in den Teamspeak-Chat des Butlers einzugeben:
+[b].register Benutzername Email Passwort[/b]
 
-[u]Die EMail adresse wird nur zum zurücksetzten des Passwords benötigt[/u]
-	`}, (err) => {
-				console.log(err);
-			});
+Sobald du dies getan hast, wird dir ein Administrator deine alten Rechte zurückgeben bzw. neue Rechte zuteilen, falls du ein Neuling bist.
+Solltest du dich mit anderen Endgeräten auf dem Teamspeak einloggen wollen, wird deine ID durch deinen Benutzernamen und das Passwort identifiziert, wenn du Folgendes eingibst:
+[b].login Benutzername Passwort[/b]
+
+Deine Daten werden verschlüsselt und vertraulich behandelt! Die eMail wird nur zum Zurücksetzen des Passworts benötigt.`});
 			teamspeakClient.send("servergroupsbyclientid", {cldbid: eventResponse.client_database_id}, (err, response) => {
 				if (!err) {
 					if (!Array.isArray(response)) {

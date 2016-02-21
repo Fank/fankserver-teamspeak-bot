@@ -10,13 +10,12 @@ const passwordRegex = /^(\S{6,}$)/i;
 export enum UserTags {
 	TeamspeakAdmin = <any>"Teamspeak Admin",
 	TeamspeakMod = <any>"Teamspeak Mod",
+	TeamspeakSubTier1 = <any>"Teamspeak Tier1",
 
 	GameLeagueOfLegends = <any>"League of Legends",
 	GameRainbow6 = <any>"Rainbow 6",
 	GameStarCitizen = <any>"Star Citizen",
-	GameTheDivision = <any>"The Division",
-
-	SubTier1 = <any>"SubTier1"
+	GameTheDivision = <any>"The Division"
 }
 
 export interface IUserSchema extends mongoose.Document {
