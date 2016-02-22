@@ -224,7 +224,8 @@ let backendConnector = new BackendConnector(config.config);
 let clientDB = {};
 let teamspeakClient = new TeamSpeakClient(config.config.teamspeak.host);
 teamspeakClient.on("error", (err) => {
-	console.log(err);
+	console.error(err);
+	process.exit(1);
 });
 teamspeakClient.send("login", {client_login_name: config.config.teamspeak.user, client_login_password: config.config.teamspeak.password}, (err, response, rawResponse) => {
 	console.log(err);
