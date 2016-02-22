@@ -289,7 +289,7 @@ teamspeakClient.on("cliententerview", (eventResponse) => {
 			});
 		}).catch(() => {
 			teamspeakClient.send("sendtextmessage", {targetmode: 1, target: eventResponse.clid, msg: `
-Hallo Keule!
+Hallo ${eventResponse.client_nickname}!
 
 Aufgrund einiger Änderungen unseres Teamspeaks müssen die Rechte der User neu vergeben werden.
 
