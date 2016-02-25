@@ -278,6 +278,8 @@ teamspeakClient.on("cliententerview", (eventResponse) => {
 						}
 					});
 
+					console.log(currentServergroups, userServergroups);
+
 					// Remove servergroups
 					_
 						.difference(currentServergroups, userServergroups)
