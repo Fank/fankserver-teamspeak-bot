@@ -7,15 +7,19 @@ const usernameRegex = /^([\w\-]{4,})$/i;
 const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/i;
 const passwordRegex = /^(\S{6,}$)/i;
 
-export enum UserTags {
-	TeamspeakAdmin = <any>"Teamspeak Admin",
-	TeamspeakMod = <any>"Teamspeak Mod",
-	TeamspeakSubTier1 = <any>"Teamspeak Tier1",
+export class UserTags {
+	static CoreAdmin = "Core Admin";
 
-	GameLeagueOfLegends = <any>"League of Legends",
-	GameRainbow6 = <any>"Rainbow 6",
-	GameStarCitizen = <any>"Star Citizen",
-	GameTheDivision = <any>"The Division"
+	static TeamspeakAdmin = "Teamspeak Admin";
+	static TeamspeakMod = "Teamspeak Mod";
+	static TeamspeakSubTier1 = "Teamspeak Tier1";
+	static TeamspeakSubTeamMulm = "Teamspeak Team Mulm";
+
+	static GameCounterStrike = "Counter Strike";
+	static GameLeagueOfLegends = "League of Legends";
+	static GameRainbow6 = "Rainbow 6";
+	static GameStarCitizen = "Star Citizen";
+	static GameStarcraft = "Starcraft";
 }
 
 export interface IUserSchema extends mongoose.Document {

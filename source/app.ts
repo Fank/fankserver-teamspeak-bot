@@ -15,44 +15,52 @@ config.loadConfig();
 
 class UnkownError extends Error {
 	constructor() {
-		this.name = "UnkownError";
 		super();
+		this.name = "UnkownError";
 	}
 }
 class UserNotExistsError extends Error {
 	constructor() {
-		this.name = "UserNotExistsError";
 		super();
+		this.name = "UserNotExistsError";
 	}
 }
 class UserExistsError extends Error {
 	constructor() {
-		this.name = "UserExistsError";
 		super();
+		this.name = "UserExistsError";
 	}
 }
 class LinkExistsError extends Error {
 	constructor() {
-		this.name = "LinkExistsError";
 		super();
+		this.name = "LinkExistsError";
 	}
 }
 class LinkNotExistsError extends Error {
 	constructor() {
-		this.name = "LinkNotExistsError";
 		super();
+		this.name = "LinkNotExistsError";
 	}
 }
 class LinkFailedError extends Error {
 	constructor() {
-		this.name = "LinkFailedError";
 		super();
+		this.name = "LinkFailedError";
 	}
 }
 
 enum ServergroupMapping {
 	TeamspeakAdmin = 6,
-	TeamspeakMod = 22
+	TeamspeakMod = 22,
+	TeamspeakSubTier1 = 36,
+	TeamspeakSubTeamMulm = 37,
+
+	GameCounterStrike = 39,
+	GameLeagueOfLegends = 38,
+	GameRainbow6 = 40,
+	GameStarCitizen = 42,
+	GameStarcraft = 41
 }
 
 class BackendConnector {
@@ -265,8 +273,8 @@ teamspeakClient.on("cliententerview", (eventResponse) => {
 					let currentServergroups = response.map(servergroup => servergroup.sgid);
 					let userServergroups = [config.config.teamspeak.registeredgrpid];
 					user.tags.forEach((tag) => {
-						if (ServergroupMapping[UserTags[tag]]) {
-							userServergroups.push(ServergroupMapping[UserTags[tag]]);
+						if (ServergroupMapping[UserTags[<any>tag]]) {
+							userServergroups.push(ServergroupMapping[UserTags[<any>tag]]);
 						}
 					});
 
