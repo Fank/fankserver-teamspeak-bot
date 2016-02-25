@@ -272,10 +272,16 @@ teamspeakClient.on("cliententerview", (eventResponse) => {
 
 					let currentServergroups = response.map(servergroup => servergroup.sgid);
 					let userServergroups = [config.config.teamspeak.registeredgrpid];
+					let formatedTags = {};
+					Object.keys(UserTags).forEach((tag) => {
+						formatedTags[UserTags[tag]] = tag;
+					});
+
+					console.log(currentServergroups, userServergroups, formatedTags);
 					user.tags.forEach((tag) => {
-						console.log(tag, UserTags[<any>tag], ServergroupMapping[UserTags[<any>tag]]);
-						if (ServergroupMapping[UserTags[<any>tag]]) {
-							userServergroups.push(ServergroupMapping[UserTags[<any>tag]]);
+						console.log(tag, formatedTags[<any>tag], ServergroupMapping[formatedTags[<any>tag]]);
+						if (ServergroupMapping[formatedTags[<any>tag]]) {
+							userServergroups.push(ServergroupMapping[formatedTags[<any>tag]]);
 						}
 					});
 
