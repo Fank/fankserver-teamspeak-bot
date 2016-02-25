@@ -259,7 +259,6 @@ teamspeakClient.send("login", {client_login_name: config.config.teamspeak.user, 
 teamspeakClient.on("cliententerview", (eventResponse) => {
 	// Ignore serveradmin
 	if (eventResponse.client_database_id > 1) {
-		console.log(eventResponse);
 		clientDB[eventResponse.clid] = eventResponse;
 
 		backendConnector.getUserByAppLink(eventResponse.client_unique_identifier).then((user) => {
@@ -277,15 +276,11 @@ teamspeakClient.on("cliententerview", (eventResponse) => {
 						formatedTags[UserTags[tag]] = tag;
 					});
 
-					console.log(currentServergroups, userServergroups, formatedTags);
 					user.tags.forEach((tag) => {
-						console.log(tag, formatedTags[<any>tag], ServergroupMapping[formatedTags[<any>tag]]);
 						if (ServergroupMapping[formatedTags[<any>tag]]) {
 							userServergroups.push(ServergroupMapping[formatedTags[<any>tag]]);
 						}
 					});
-
-					console.log(currentServergroups, userServergroups);
 
 					// Remove servergroups
 					_
