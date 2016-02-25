@@ -296,6 +296,9 @@ teamspeakClient.on("cliententerview", (eventResponse) => {
 							teamspeakClient.send("servergroupaddclient", {sgid: servergroupId, cldbid: eventResponse.client_database_id});
 						});
 				}
+				else {
+					console.error(err);
+				}
 			});
 		}).catch(() => {
 			teamspeakClient.send("sendtextmessage", {targetmode: 1, target: eventResponse.clid, msg: `
