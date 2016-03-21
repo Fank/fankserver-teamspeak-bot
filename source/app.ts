@@ -262,7 +262,7 @@ teamspeakClient.on("cliententerview", (eventResponse) => {
 		clientDB[eventResponse.clid] = eventResponse;
 
 		backendConnector.getUserByAppLink(eventResponse.client_unique_identifier).then((user) => {
-			teamspeakClient.send("sendtextmessage", {targetmode: 1, target: eventResponse.clid, msg: "Willkommen " + user.get("username")});
+			//teamspeakClient.send("sendtextmessage", {targetmode: 1, target: eventResponse.clid, msg: "Willkommen " + user.get("username")});
 			teamspeakClient.send("servergroupsbyclientid", {cldbid: eventResponse.client_database_id}, (err, response) => {
 				if (!err) {
 					if (!Array.isArray(response)) {
