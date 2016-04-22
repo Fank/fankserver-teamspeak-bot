@@ -206,18 +206,23 @@ class BackendConnector {
 		return new Promise<IUserSchema>((resolve, reject) => {
 			this._mongooseConnection.model<IUserSchema>("User").findOne({ username: username }, (err, userDocument) => {
 				if (userDocument) {
-					userDocument.validatePassword(password, (valid: boolean) => {
-						if (valid) {
-							resolve(userDocument);
-						}
-						else {
-							reject(new LinkNotExistsError());
-						}
-					});
+					resolve(userDocument);
 				}
 				else {
 					reject(new UserNotExistsError());
 				}
+			});
+		})
+		.then((userDocument) => {
+			return new Promise<IUserSchema>((resolve, reject) => {
+				userDocument.validatePassword(password, (valid: boolean) => {
+					if (valid) {
+						resolve(userDocument);
+					}
+					else {
+						reject(new LinkNotExistsError());
+					}
+				});
 			});
 		})
 		.then((userDocument) => {
