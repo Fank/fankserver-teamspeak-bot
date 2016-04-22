@@ -71,32 +71,35 @@ class BackendConnector {
 	}
 
 	getUserByAppLink(appAccountId: string): Promise<IUserSchema> {
-		return new Promise<any>((resolve, reject) => {
-			this._mongooseConnection.model<IAppLinkSchema>("AppLink")
-				.findOne({
-					"provider": "Teamspeak3",
-					"account_id": appAccountId
+		return new Promise<IAppLinkSchema>((resolve, reject) => {
+			this._mongooseConnection.model<IAppLinkSchema>("AppLink").findOne({
+				"provider": "Teamspeak3",
+				"account_id": appAccountId
+			})
+			.exec((err, appLink) => {
+				if (appLink) {
+					resolve(appLink);
+				}
+				else {
+					reject(new LinkNotExistsError());
+				}
+			});
+		})
+		.then((appLink) => {
+			return new Promise<IUserSchema>((resolve, reject) => {
+				this._mongooseConnection.model<IUserSchema>("User").findOne({
+					"appLinks": appLink._id
 				})
-				.exec((err, appLink) => {
-					if (appLink) {
-						this._mongooseConnection.model<IUserSchema>("User")
-							.findOne({
-								"appLinks": appLink._id
-							})
-							.exec((err, user) => {
-								if (user) {
-									resolve(user);
-								}
-								else {
-									reject(new UserNotExistsError());
-								}
-							});
+				.exec((err, user) => {
+					if (user) {
+						resolve(user);
 					}
 					else {
-						reject(new LinkNotExistsError());
+						reject(new UserNotExistsError());
 					}
 				});
 			});
+		});
 	}
 
 	linkAppToUser(userDocument: IUserSchema, appAccountId: string): Promise<IAppLinkSchema> {
@@ -201,21 +204,23 @@ class BackendConnector {
 
 	loginUser(username: string, password: string, appAccountId: string): Promise<IUserSchema> {
 		return new Promise<IUserSchema>((resolve, reject) => {
-			this._mongooseConnection.model<IUserSchema>("User")
-				.findOne({ username: username }, (err, userDocument) => {
-					if (userDocument) {
-						userDocument.validatePassword(password, (valid: boolean) => {
-							this.linkAppToUser(userDocument, appAccountId).then((appLink) => {
-								resolve(userDocument);
-							}).catch((err) => {
-								reject(err);
-							});
-						});
-					}
-					else {
-						reject(new UserNotExistsError());
-					}
+			this._mongooseConnection.model<IUserSchema>("User").findOne({ username: username }, (err, userDocument) => {
+				if (userDocument) {
+					resolve(userDocument);
+				}
+				else {
+					reject(new UserNotExistsError());
+				}
+			});
+		})
+		.then((userDocument) => {
+			return new Promise<IUserSchema>((resolve, reject) => {
+				this.linkAppToUser(userDocument, appAccountId).then((appLink) => {
+					resolve(userDocument);
+				}).catch((err) => {
+					reject(err);
 				});
+			});
 		});
 	}
 
