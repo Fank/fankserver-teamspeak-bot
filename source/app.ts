@@ -206,7 +206,14 @@ class BackendConnector {
 		return new Promise<IUserSchema>((resolve, reject) => {
 			this._mongooseConnection.model<IUserSchema>("User").findOne({ username: username }, (err, userDocument) => {
 				if (userDocument) {
-					resolve(userDocument);
+					userDocument.validatePassword(password, (valid: boolean) => {
+						if (valid) {
+							resolve(userDocument);
+						}
+						else {
+							reject(new LinkNotExistsError());
+						}
+					});
 				}
 				else {
 					reject(new UserNotExistsError());
