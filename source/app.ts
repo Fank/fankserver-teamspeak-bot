@@ -56,6 +56,8 @@ enum ServergroupMapping {
 	TeamspeakSubTier1 = 36,
 	TeamspeakSubTeamMulm = 37,
 
+	GameEvE = 44,
+	GameGuildWars = 45,
 	GameCounterStrike = 39,
 	GameLeagueOfLegends = 38,
 	GameRainbow6 = 40,

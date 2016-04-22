@@ -2,7 +2,7 @@
   "dependencies": {
     "es6-promise": "github:typed-typings/npm-es6-promise#fb04188767acfec1defd054fc8024fafa5cd4de7",
     "gravatar": "github:Fankserver/npm-gravatar#5b5a86a02df69230cc69abcd34e97ab14a82595e",
-    "mongoose-timestamp": "github:Fankserver/npm-mongoose-timestamp#67e521f1a25a2a21f25f7b74a7227ef36e0a8a7c",
+    "mongoose-timestamp": "github:typed-typings/npm-mongoose-timestamp#46367c3e46232e7711e855b7514a39f8b6cdff47",
     "node-teamspeak": "github:Fankserver/npm-node-teamspeak#fd84297b37aa18517360a8d3c3af5bda8a1a5a25",
     "toml": "github:Fankserver/npm-toml#3f9f22c487ce6376b4fa90cd5cbc32f4afd5520f"
   },
