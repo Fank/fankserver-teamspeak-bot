@@ -249,6 +249,7 @@ class BackendConnector {
 let backendConnector = new BackendConnector(config.config);
 
 let clientDB = {};
+let servergroups = [];
 let teamspeakClient = new TeamSpeakClient(config.config.teamspeak.host);
 teamspeakClient.on("error", (err) => {
 	console.error(err);
@@ -265,6 +266,9 @@ teamspeakClient.send("login", {client_login_name: config.config.teamspeak.user, 
 			});
 			teamspeakClient.send("servernotifyregister", {event: "textprivate"}, (err, response, rawResponse) => {
 				console.log(err);
+			});
+			teamspeakClient.send("servergrouplist", (err, response, rawResponse) => {
+				servergroups = response;
 			});
 
 			// Keep alive loop
@@ -305,6 +309,7 @@ teamspeakClient.on("cliententerview", (eventResponse) => {
 					_
 						.difference(currentServergroups, userServergroups)
 						.filter(v => v > 5) // Ignore queries & templates
+						.filter(v => servergroups.filter(servergroup => servergroup.sgid === v)[0].name.charAt(0) !== "-")
 						.forEach((servergroupId) => {
 							teamspeakClient.send("servergroupdelclient", {sgid: servergroupId, cldbid: eventResponse.client_database_id});
 						});
