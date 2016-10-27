@@ -1,36 +1,24 @@
-import fs = require("fs");
-import path = require("path");
-import toml = require("toml");
-
 export class Config {
-	private _configPath: string = path.join(__dirname, "..", "..", "config.toml");
 	private _config: any;
+
+	constructor() {
+		this._config = {
+			mongo: {
+				db: `${process.env.DB_PORT || ''}/${process.env.DB_NAME || ''}`,
+			},
+			teamspeak: {
+				host: process.env.TEAMSPEAK_PORT_10011_TCP_ADDR,
+				user: process.env.TEAMSPEAK_USERNAME,
+				password: process.env.TEAMSPEAK_PASSWORD,
+				nickname: process.env.TEAMSPEAK_NICKNAME,
+				guestgrpid: 8,
+				registeredgrpid: 35,
+			},
+		};
+		this._config.mongo.db = this._config.mongo.db.replace(/^tcp/, 'mongodb');
+	}
 
 	get config() {
 		return this._config;
-	}
-
-	loadConfig() {
-		try {
-			fs.statSync(this._configPath);
-		}
-		catch (e) {
-			try {
-				let configContent = fs.readFileSync(this._configPath + ".example");
-				fs.writeFileSync(this._configPath, configContent);
-			}
-			catch (e) {
-				console.error(e);
-				process.exit(1);
-			}
-		}
-
-		try {
-			this._config = toml.parse(fs.readFileSync(this._configPath).toString());
-		}
-		catch (e) {
-			console.error(e);
-			process.exit(1);
-		}
 	}
 }

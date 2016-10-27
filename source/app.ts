@@ -11,7 +11,6 @@ import {IAppLinkSchema} from "./model/applink";
 import {IUserSchema, UserValidator, UserTags} from "./model/user";
 
 let config = new Config();
-config.loadConfig();
 
 class UnkownError extends Error {
 	constructor() {
