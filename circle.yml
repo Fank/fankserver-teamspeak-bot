@@ -3,7 +3,7 @@ machine:
     - docker
 
 dependencies:
-  pre:
+  override:
     - docker info
     - docker build -t fankserver.com/fankserver/website:$CIRCLE_SHA1 .
 
