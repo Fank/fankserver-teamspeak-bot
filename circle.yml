@@ -1,7 +1,7 @@
 machine:
   environment:
-    CONTAINER_TEST_IMAGE: registry.fankserver.com/fankserver/website:$CIRCLE_SHA1
-    CONTAINER_RELEASE_IMAGE: registry.fankserver.com/fankserver/website:latest
+    CONTAINER_TEST_IMAGE: registry.fankserver.com/fankserver/teamspeak-bot:$CIRCLE_SHA1
+    CONTAINER_RELEASE_IMAGE: registry.fankserver.com/fankserver/teamspeak-bot:latest
   services:
     - docker
 
