@@ -7,6 +7,10 @@ dependencies:
     - docker info
     - docker build --rm=false -t fankserver.com/fankserver/website:$CIRCLE_SHA1 .
 
+test:
+  override:
+    - echo "Temporarily disabled"
+
 deployment:
   hub:
     branch: master
