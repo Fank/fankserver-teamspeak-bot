@@ -1,11 +1,15 @@
 machine:
+  environment:
+    CONTAINER_TEST_IMAGE: registry.fankserver.com/fankserver/website:$CIRCLE_SHA1
+    CONTAINER_RELEASE_IMAGE: registry.fankserver.com/fankserver/website:latest
   services:
     - docker
 
 dependencies:
   override:
     - docker info
-    - docker build --rm=false -t registry.fankserver.com/fankserver/website:$CIRCLE_SHA1 .
+    - docker build --rm=false -t $CONTAINER_TEST_IMAGE .
+    - docker push $CONTAINER_TEST_IMAGE
 
 test:
   override:
@@ -15,4 +19,5 @@ deployment:
   hub:
     branch: master
     commands:
-      - docker push registry.fankserver.com/fankserver/website
+      - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
+      - docker push $CONTAINER_RELEASE_IMAGE
