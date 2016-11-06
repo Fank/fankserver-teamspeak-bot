@@ -5,7 +5,7 @@ machine:
 dependencies:
   override:
     - docker info
-    - docker build --rm=false -t fankserver.com/fankserver-website:$CIRCLE_SHA1 .
+    - docker build --rm=false -t fankserver.com/fankserver/website:$CIRCLE_SHA1 .
 
 test:
   override:
@@ -15,4 +15,4 @@ deployment:
   hub:
     branch: master
     commands:
-      - docker push fankserver.com/fankserver-website
+      - docker push fankserver.com/fankserver/website
