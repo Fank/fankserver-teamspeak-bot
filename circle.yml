@@ -8,6 +8,7 @@ machine:
 dependencies:
   override:
     - docker info
+    - sed -i -e 's~"github:\(fank/fankserver[^"]*\)~"git+https://'"$NPM_TOKEN"':x-oauth-basic@github.com/\1.git~g' package.json
     - docker build --rm=false -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
 
