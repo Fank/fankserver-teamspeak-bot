@@ -9,28 +9,21 @@
         "emitDecoratorMetadata": true,
         "declaration": false,
         "noImplicitAny": false,
+        "noImplicitUseStrict": false,
         "removeComments": true,
         "noLib": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
-        "outDir": "dist/"
+        "outDir": "dist"
     },
-    "filesGlob": [
-        "source/**/*.ts",
-        "source/**/*.tsx",
-        "typings/main.d.ts",
-        "!node_modules/**"
+    "exclude": [
+        "node_modules",
+        "typings/browser",
+        "typings/browser.d.ts"
     ],
     "compileOnSave": true,
     "buildOnSave": false,
-    "files": [
-        "source/app.ts",
-        "source/config/config.ts",
-        "source/model/applink.ts",
-        "source/model/user.ts",
-        "typings/main.d.ts"
-    ],
     "atom": {
-        "rewriteTsconfig": true
+        "rewriteTsconfig": false
     }
 }

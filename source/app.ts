@@ -3,12 +3,10 @@ import mongoose = require("mongoose");
 import TeamSpeakClient = require("node-teamspeak");
 import _ = require("underscore");
 
-require("./model/applink");
-require("./model/user");
+import * as Database from 'fankserver-database-schema';
+Database.init();
 
 import {Config} from "./config/config";
-import {IAppLinkSchema} from "./model/applink";
-import {IUserSchema, UserValidator, UserTags} from "./model/user";
 
 let config = new Config();
 
@@ -71,9 +69,9 @@ class BackendConnector {
 		this._connectMongoose(conf.mongo.db);
 	}
 
-	getUserByAppLink(appAccountId: string): Promise<IUserSchema> {
-		return new Promise<IAppLinkSchema>((resolve, reject) => {
-			this._mongooseConnection.model<IAppLinkSchema>("AppLink").findOne({
+	getUserByAppLink(appAccountId: string): Promise<Database.IUserSchema> {
+		return new Promise<Database.IAppLinkSchema>((resolve, reject) => {
+			Database.AppLinkModel.findOne({
 				"provider": "Teamspeak3",
 				"account_id": appAccountId
 			})
@@ -87,8 +85,8 @@ class BackendConnector {
 			});
 		})
 		.then((appLink) => {
-			return new Promise<IUserSchema>((resolve, reject) => {
-				this._mongooseConnection.model<IUserSchema>("User").findOne({
+			return new Promise<Database.IUserSchema>((resolve, reject) => {
+				Database.UserModel.findOne({
 					"appLinks": appLink._id
 				})
 				.exec((err, user) => {
@@ -103,24 +101,22 @@ class BackendConnector {
 		});
 	}
 
-	linkAppToUser(userDocument: IUserSchema, appAccountId: string): Promise<IAppLinkSchema> {
-		return new Promise<IAppLinkSchema>((resolve, reject) => {
-			let AppLink = this._mongooseConnection.model<IAppLinkSchema>("AppLink");
-
-			AppLink
+	linkAppToUser(userDocument: Database.IUserSchema, appAccountId: string): Promise<Database.IAppLinkSchema> {
+		return new Promise<Database.IAppLinkSchema>((resolve, reject) => {
+			Database.AppLinkModel
 				.findOne({
 					"provider": "Teamspeak3",
 					"account_id": appAccountId
 				})
 				.exec((err, appLink) => {
 					if (appLink) {
-						this._mongooseConnection.model<IUserSchema>("User")
+						this._mongooseConnection.model<Database.IUserSchema>("User")
 							.findOne({
 								"appLinks": appLink._id
 							})
 							.exec((err, user) => {
 								if (!err && !user) {
-									(<any>userDocument).update({$push: {"appLinks": appLink._id}}, (err) => {
+									userDocument.update({$push: {"appLinks": appLink._id}}, (err) => {
 										if (err) {
 											reject(new LinkFailedError());
 										}
@@ -138,11 +134,11 @@ class BackendConnector {
 							});
 					}
 					else {
-						let appLink = new AppLink({
+						let appLink = new Database.AppLinkModel({
 							"provider": "Teamspeak3",
 							"account_id": appAccountId
 						});
-						appLink.save<IAppLinkSchema>((err, appLinkDocument) => {
+						appLink.save<Database.IAppLinkSchema>((err, appLinkDocument) => {
 							if (err) {
 								// Duplicate entry
 								if (err.code === 11000) {
@@ -154,7 +150,7 @@ class BackendConnector {
 								}
 							}
 							else {
-								(<any>userDocument).update({$push: {"appLinks": appLink._id}}, (err) => {
+								userDocument.update({$push: {"appLinks": appLink._id}}, (err) => {
 									if (err) {
 										reject(new LinkFailedError());
 									}
@@ -169,16 +165,14 @@ class BackendConnector {
 		});
 	}
 
-	registerUser(username: string, email: string, password: string, appAccountId: string): Promise<IUserSchema> {
-		return new Promise<IUserSchema>((resolve, reject) => {
-			let User = this._mongooseConnection.model<IUserSchema>("User");
-
-			let user = new User({
+	registerUser(username: string, email: string, password: string, appAccountId: string): Promise<Database.IUserSchema> {
+		return new Promise<Database.IUserSchema>((resolve, reject) => {
+			let user = new Database.UserModel({
 				username: username,
 				password: password,
 				email: email
 			});
-			user.save<IUserSchema>((err, userDocument) => {
+			user.save<Database.IUserSchema>((err, userDocument) => {
 				if (err) {
 					// Duplicate entry
 					if (err.code === 11000) {
@@ -203,9 +197,9 @@ class BackendConnector {
 		});
 	}
 
-	loginUser(username: string, password: string, appAccountId: string): Promise<IUserSchema> {
-		return new Promise<IUserSchema>((resolve, reject) => {
-			this._mongooseConnection.model<IUserSchema>("User").findOne({ username: username }, (err, userDocument) => {
+	loginUser(username: string, password: string, appAccountId: string): Promise<Database.IUserSchema> {
+		return new Promise<Database.IUserSchema>((resolve, reject) => {
+			this._mongooseConnection.model<Database.IUserSchema>("User").findOne({ username: username }, (err, userDocument) => {
 				if (userDocument) {
 					resolve(userDocument);
 				}
@@ -215,7 +209,7 @@ class BackendConnector {
 			});
 		})
 		.then((userDocument) => {
-			return new Promise<IUserSchema>((resolve, reject) => {
+			return new Promise<Database.IUserSchema>((resolve, reject) => {
 				userDocument.validatePassword(password, (valid: boolean) => {
 					if (valid) {
 						resolve(userDocument);
@@ -227,7 +221,7 @@ class BackendConnector {
 			});
 		})
 		.then((userDocument) => {
-			return new Promise<IUserSchema>((resolve, reject) => {
+			return new Promise<Database.IUserSchema>((resolve, reject) => {
 				this.linkAppToUser(userDocument, appAccountId).then((appLink) => {
 					resolve(userDocument);
 				}).catch((err) => {
@@ -294,8 +288,8 @@ teamspeakClient.on("cliententerview", (eventResponse) => {
 					let currentServergroups = response.map(servergroup => servergroup.sgid);
 					let userServergroups = [config.config.teamspeak.registeredgrpid];
 					let formatedTags = {};
-					Object.keys(UserTags).forEach((tag) => {
-						formatedTags[UserTags[tag]] = tag;
+					Object.keys(Database.UserTags).forEach((tag) => {
+						formatedTags[Database.UserTags[tag]] = tag;
 					});
 
 					user.tags.forEach((tag) => {
@@ -368,13 +362,13 @@ teamspeakClient.on("textmessage", (response) => {
 			// remove BBCode from email
 			match[2] = match[2].replace(/^\[URL=mailto:[^\]]+\]([^\[]+)\[\/URL\]$/, (match, p1) => { return p1; });
 
-			if (!UserValidator.username(match[1])) {
+			if (!Database.UserValidator.username(match[1])) {
 				teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Benutzername muss 4 oder mehr Zeichen (A-Z, 0-9, -, _) beinhanten"});
 			}
-			else if (!UserValidator.email(match[2])) {
+			else if (!Database.UserValidator.email(match[2])) {
 				teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "EMail ist nicht gültig"});
 			}
-			else if (!UserValidator.password(match[3])) {
+			else if (!Database.UserValidator.password(match[3])) {
 				teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Passwort muss 6 oder mehr Zeichen beinhanten"});
 			}
 			else {
@@ -390,10 +384,10 @@ teamspeakClient.on("textmessage", (response) => {
 		// Login
 		match = loginRegex.exec(response.msg);
 		if (match) {
-			if (!UserValidator.username(match[1])) {
+			if (!Database.UserValidator.username(match[1])) {
 				teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Benutzername muss 4 oder mehr Zeichen (A-Z, 0-9, -, _) beinhanten"});
 			}
-			else if (!UserValidator.password(match[2])) {
+			else if (!Database.UserValidator.password(match[2])) {
 				teamspeakClient.send("sendtextmessage", {targetmode: 1, target: response.invokerid, msg: "Passwort muss 6 oder mehr Zeichen beinhanten"});
 			}
 			else {

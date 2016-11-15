@@ -1,14 +1,11 @@
 {
-  "dependencies": {
-    "es6-promise": "github:typed-typings/npm-es6-promise#fb04188767acfec1defd054fc8024fafa5cd4de7",
-    "gravatar": "github:Fankserver/npm-gravatar#5b5a86a02df69230cc69abcd34e97ab14a82595e",
-    "mongoose-timestamp": "github:typed-typings/npm-mongoose-timestamp#46367c3e46232e7711e855b7514a39f8b6cdff47",
-    "node-teamspeak": "github:Fankserver/npm-node-teamspeak#fd84297b37aa18517360a8d3c3af5bda8a1a5a25"
-  },
   "ambientDependencies": {
     "crypto-js": "github:DefinitelyTyped/DefinitelyTyped/crypto-js/crypto-js.d.ts#1429bcc7fed522b2eac523118ffca0b2486578e1",
     "mongoose": "github:DefinitelyTyped/DefinitelyTyped/mongoose/mongoose.d.ts#cebde64b3a1d63d07ee7c7dbc49b631ce220d027",
-    "node": "github:DefinitelyTyped/DefinitelyTyped/node/node.d.ts#366b936e62a6244a15f011e0ee0559b903d1dd65",
     "underscore": "github:DefinitelyTyped/DefinitelyTyped/underscore/underscore.d.ts#669e1b73f18ea6ea15bfbfbbdad6501bfa0ff340"
+  },
+  "globalDependencies": {
+    "crypto-js": "registry:dt/crypto-js#3.1.4+20160708041433",
+    "underscore": "registry:dt/underscore#1.8.3+20161016154529"
   }
 }
