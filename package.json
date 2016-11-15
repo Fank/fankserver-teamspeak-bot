@@ -2,10 +2,10 @@
   "name": "teamspeak-bot",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/app.js",
+  "main": "app/app.js",
   "scripts": {
     "postinstall": "typings install && tsc",
-    "start": "node ./dist/app.js",
+    "start": "node ./app/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Florian Kinder",

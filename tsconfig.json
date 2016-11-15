@@ -13,8 +13,7 @@
         "removeComments": true,
         "noLib": false,
         "preserveConstEnums": true,
-        "suppressImplicitAnyIndexErrors": true,
-        "outDir": "dist"
+        "suppressImplicitAnyIndexErrors": true
     },
     "exclude": [
         "node_modules",
