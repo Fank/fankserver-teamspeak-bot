@@ -1,11 +1,6 @@
 {
-  "ambientDependencies": {
-    "crypto-js": "github:DefinitelyTyped/DefinitelyTyped/crypto-js/crypto-js.d.ts#1429bcc7fed522b2eac523118ffca0b2486578e1",
-    "mongoose": "github:DefinitelyTyped/DefinitelyTyped/mongoose/mongoose.d.ts#cebde64b3a1d63d07ee7c7dbc49b631ce220d027",
-    "underscore": "github:DefinitelyTyped/DefinitelyTyped/underscore/underscore.d.ts#669e1b73f18ea6ea15bfbfbbdad6501bfa0ff340"
-  },
-  "globalDependencies": {
-    "crypto-js": "registry:dt/crypto-js#3.1.4+20160708041433",
-    "underscore": "registry:dt/underscore#1.8.3+20161016154529"
+  "dependencies": {
+    "mongoose-timestamp": "registry:npm/mongoose-timestamp#0.5.0+20160723033700",
+    "node-teamspeak": "registry:npm/node-teamspeak#1.0.1+20160723033700"
   }
 }

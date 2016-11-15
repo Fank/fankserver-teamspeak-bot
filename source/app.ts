@@ -138,7 +138,7 @@ class BackendConnector {
 							"provider": "Teamspeak3",
 							"account_id": appAccountId
 						});
-						appLink.save<Database.IAppLinkSchema>((err, appLinkDocument) => {
+						appLink.save((err, appLinkDocument) => {
 							if (err) {
 								// Duplicate entry
 								if (err.code === 11000) {
@@ -172,7 +172,7 @@ class BackendConnector {
 				password: password,
 				email: email
 			});
-			user.save<Database.IUserSchema>((err, userDocument) => {
+			user.save((err, userDocument) => {
 				if (err) {
 					// Duplicate entry
 					if (err.code === 11000) {
