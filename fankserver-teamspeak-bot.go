@@ -1,53 +1,47 @@
 package main
 
+import (
+	"log"
+	"os"
+
+	"github.com/fank/ts3"
+)
+
 func main() {
-	bot := Bot{}
+	client, err := ts3.NewClient(os.Getenv("TEAMSPEAK_PORT_10011_TCP") + ":10011")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	bot.Connect()
-	bot.UpdateServerGroupList()
-	bot.Run()
+	// This a test user account
+	_, err = client.Exec(ts3.Login("serveradmin", os.Getenv("TEAMSPEAK_PASSWORD")))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = client.Exec(ts3.Select(1))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Clients:")
+	err = client.WalkClients(func(idx int, client map[string]string) {
+		log.Printf("%s", client)
+		// if nick, ok := client["client_nickname"]; ok && nick == "Nathan" {
+		// 	// nathanIsOnline = true
+		// }
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Channels:")
+	channelList, err := client.Exec(ts3.ChannelList())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println(channelList)
+
+	client.Close()
 }
-
-// func bot(conn *ts3.Conn) {
-// 	defer conn.Cmd("quit")
-//
-// 	var cmds = []string{
-// 		// Login
-// 		"login serveradmin gameserver2991211...___",
-// 		// Choose virtual server
-// 		"use 1",
-// 		// Update nickname
-// 		`clientupdate client_nickname=My\sBot`,
-// 		// Register to channel id=1 text messages
-// 		"servernotifyregister event=server",
-// 		"servernotifyregister event=textprivate",
-// 	}
-//
-// 	conn.NotifyFunc(notify)
-//
-// 	for _, s := range cmds {
-// 		// Send command and wait for its response
-// 		r, _ := conn.Cmd(s)
-// 		// Display as:
-// 		//     > request
-// 		//     response
-// 		fmt.Printf("> %s\n%s", s, r)
-// 		// Wait a bit after each command so we don't get banned. By default you
-// 		// can issue 10 commands within 3 seconds.  More info on the
-// 		// WHITELISTING AND BLACKLISTING section of TS3 ServerQuery Manual
-// 		// (http://goo.gl/OpJXz).
-// 		time.Sleep(350 * time.Millisecond)
-// 	}
-//
-// 	r, _ := conn.Cmd("servergrouplist")
-// 	fmt.Printf("%v", ts3interface.(r))
-//
-// 	for {
-// 		time.Sleep(30 * time.Second)
-// 		conn.Cmd("whoami")
-// 	}
-// }
-//
-// func notify(a string, b string) {
-// 	fmt.Printf("Notification (%s) (%s)\n", a, b)
-// }
